@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Cell } from 'react-table';
 import { useTimer } from 'use-timer';
-import InputBase from '@material-ui/core/InputBase';
 import { Button, Grid } from '@material-ui/core';
 
 import { Table } from './Table';
+import { Search } from './Search';
 import { AddUser } from './AddUser';
 import { EditUser } from './EditUser';
 import { RemoveUser } from './RemoveUser';
@@ -14,7 +14,7 @@ import { Users as UsersNamespace } from '../../models/users';
 import { getUsersSaga, removeUserSaga, setRemovedUser } from './actions';
 
 export const Users: React.FC = () => {
-  const [showCancelBtn, setShowCancelBtn] = useState(false);
+  const [showCancelBtn, setShowCancelBtn] = useState<boolean>(false);
 
   const dispatch = useDispatch();
   const users = useSelector(getUsers);
@@ -42,20 +42,23 @@ export const Users: React.FC = () => {
       dispatch(removeUserSaga(removedUser?.id));
       setShowCancelBtn(false);
     }
-  }, [time]);
+  }, [time, removedUser]);
 
-  const restartTimer = useCallback((id: number) => {
-    dispatch(removeUserSaga(id));
-    reset();
-    start();
-  }, []);
+  const restartTimer = useCallback(
+    (id: number) => {
+      dispatch(removeUserSaga(id));
+      reset();
+      start();
+    },
+    [reset, start],
+  );
 
-  const handleCancelRemove = () => {
+  const handleCancelRemove = useCallback(() => {
     reset();
     setShowCancelBtn(false);
     dispatch(setRemovedUser(null));
     dispatch(getUsersSaga());
-  };
+  }, [reset]);
 
   const columns = useMemo(
     () => [
@@ -105,11 +108,15 @@ export const Users: React.FC = () => {
         </Grid>
       )}
 
-      <InputBase placeholder='Search…' inputProps={{ 'aria-label': 'search' }} />
+      <Search />
 
       <AddUser />
 
-      {users && <Table columns={columns} data={users} />}
+      {users?.length ? (
+        <Table columns={columns} data={users} />
+      ) : (
+        <div>Not found any data for this request.</div>
+      )}
     </>
   );
 };

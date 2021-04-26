@@ -1,15 +1,6 @@
-export namespace Users {
-  // export class User {
-  //   constructor(
-  //     public id: number,
-  //     public name: string,
-  //     public username: string,
-  //     public email: string,
-  //     public phone: string,
-  //     public website: string,
-  //   ) {}
-  // }
+import { ControllerRenderProps } from 'react-hook-form';
 
+export namespace Users {
   export interface User {
     id: number;
     email: string;
@@ -18,11 +9,6 @@ export namespace Users {
     website: string;
     phone: string;
   }
-
-  // export interface ResponsePayload {
-  //   items: Array<Participant>;
-  //   totalCount: number;
-  // }
 
   export interface PostRequest {
     email: string;
@@ -44,18 +30,11 @@ export namespace Users {
 
   export interface IField {
     name: Name;
-    component: (field: any) => JSX.Element;
+    component: (field: ControllerRenderProps<Users.PostRequest>) => JSX.Element;
   }
 
   export interface IFieldRemove {
     name: Name;
     component: JSX.Element;
   }
-
-  // export interface PromiseError {
-  // 	brand: Array<never>;
-  // 	model: Array<never>;
-  // 	number: Array<never>;
-  // 	vehicleType: Array<never>;
-  // }
 }

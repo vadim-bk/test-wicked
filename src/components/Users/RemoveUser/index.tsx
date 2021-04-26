@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -13,9 +13,9 @@ import {
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 
-import { getRemovedUser, getUsers } from '../selectors';
 import { Users } from '../../../models/users';
 import { setRemovedUser, setUsers } from '../actions';
+import { getRemovedUser, getUsers } from '../selectors';
 
 interface IRemoveUser {
   user: Users.User;
@@ -25,7 +25,7 @@ interface IRemoveUser {
 export const RemoveUser: React.FC<IRemoveUser> = (props) => {
   const { user, restartTimer } = props;
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   const dispatch = useDispatch();
   const users = useSelector(getUsers);
@@ -39,50 +39,63 @@ export const RemoveUser: React.FC<IRemoveUser> = (props) => {
     setOpen(false);
   }, []);
 
-  const onSubmit = () => {
-    dispatch(setUsers(users.filter((item: Users.User) => item.id !== user.id)));
+  const onSubmit = useCallback(() => {
+    dispatch(setUsers(users?.filter((item: Users.User) => item.id !== user.id)));
     dispatch(setRemovedUser(user));
     handleClose();
 
     if (removedUser) {
       restartTimer(removedUser?.id);
     }
-  };
+  }, [handleClose, removedUser, restartTimer]);
 
   const { control, handleSubmit } = useForm<Users.PostRequest>();
 
-  const formFields: Array<Users.IFieldRemove> = [
-    {
-      name: 'email',
-      component: (
-        <TextField disabled id='standard-disabled' label='Email' defaultValue={user.email} />
-      ),
-    },
-    {
-      name: 'name',
-      component: (
-        <TextField disabled id='standard-disabled' label='First Name' defaultValue={user.name} />
-      ),
-    },
-    {
-      name: 'username',
-      component: (
-        <TextField disabled id='standard-disabled' label='Last Name' defaultValue={user.username} />
-      ),
-    },
-    {
-      name: 'website',
-      component: (
-        <TextField disabled id='standard-disabled' label='Role' defaultValue={user.website} />
-      ),
-    },
-    {
-      name: 'phone',
-      component: (
-        <TextField disabled id='standard-disabled' label='Company Role' defaultValue={user.phone} />
-      ),
-    },
-  ];
+  const formFields: Array<Users.IFieldRemove> = useMemo(
+    () => [
+      {
+        name: 'email',
+        component: (
+          <TextField disabled id='standard-disabled' label='Email' defaultValue={user.email} />
+        ),
+      },
+      {
+        name: 'name',
+        component: (
+          <TextField disabled id='standard-disabled' label='First Name' defaultValue={user.name} />
+        ),
+      },
+      {
+        name: 'username',
+        component: (
+          <TextField
+            disabled
+            id='standard-disabled'
+            label='Last Name'
+            defaultValue={user.username}
+          />
+        ),
+      },
+      {
+        name: 'website',
+        component: (
+          <TextField disabled id='standard-disabled' label='Role' defaultValue={user.website} />
+        ),
+      },
+      {
+        name: 'phone',
+        component: (
+          <TextField
+            disabled
+            id='standard-disabled'
+            label='Company Role'
+            defaultValue={user.phone}
+          />
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <>
@@ -92,6 +105,7 @@ export const RemoveUser: React.FC<IRemoveUser> = (props) => {
 
       <Dialog open={open} onClose={handleClose} aria-labelledby='form-dialog-title' maxWidth='md'>
         <DialogTitle id='form-dialog-title'>Remove User</DialogTitle>
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             <Grid container>
@@ -102,6 +116,7 @@ export const RemoveUser: React.FC<IRemoveUser> = (props) => {
               ))}
             </Grid>
           </DialogContent>
+
           <DialogActions>
             <Button type='button' onClick={handleClose} color='secondary'>
               Cancel

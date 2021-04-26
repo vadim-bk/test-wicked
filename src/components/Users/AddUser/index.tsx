@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Controller, Field, useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
@@ -17,30 +17,28 @@ import {
   TextField,
 } from '@material-ui/core';
 
-import { Users } from '../../../models/users';
 import { createUserSaga } from '../actions';
-
-interface IField {
-  name: 'email' | 'name' | 'username' | 'website' | 'phone';
-  component: (field: any) => JSX.Element;
-}
+import { Users } from '../../../models/users';
 
 export const AddUser: React.FC = () => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   const dispatch = useDispatch();
 
-  const handleOpen = () => {
+  const handleOpen = useCallback(() => {
     setOpen(true);
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-  };
+  }, []);
 
-  const onSubmit = (values: Users.PostRequest) => {
-    dispatch(createUserSaga({ values, handleClose }));
-  };
+  const onSubmit = useCallback(
+    (values: Users.PostRequest) => {
+      dispatch(createUserSaga({ values, handleClose }));
+    },
+    [handleClose],
+  );
 
   const schema = yup.object().shape({
     email: yup.string().required(),
@@ -54,81 +52,86 @@ export const AddUser: React.FC = () => {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<Users.PostRequest>({
-    resolver: yupResolver(schema),
-  });
+  } = useForm<Users.PostRequest>({ resolver: yupResolver(schema) });
 
-  const formFields: Array<IField> = [
-    {
-      name: 'email',
-      component: (field: Field) => (
-        <TextField
-          {...field}
-          margin='dense'
-          fullWidth
-          type='text'
-          label='Email'
-          error={!!errors.email}
-          helperText={errors.email?.message}
-        />
-      ),
-    },
-    {
-      name: 'name',
-      component: (field: Field) => (
-        <TextField
-          {...field}
-          margin='dense'
-          fullWidth
-          type='text'
-          label='First Name'
-          error={!!errors.name}
-          helperText={errors.name?.message}
-        />
-      ),
-    },
-    {
-      name: 'username',
-      component: (field: Field) => (
-        <TextField
-          {...field}
-          margin='dense'
-          fullWidth
-          type='text'
-          label='Last Name'
-          error={!!errors.username}
-          helperText={errors.username?.message}
-        />
-      ),
-    },
-    {
-      name: 'website',
-      component: (field: Field) => (
-        <FormControl error={!!errors.website} fullWidth>
-          <InputLabel id='demo-simple-select-error-label'>Role</InputLabel>
-          <Select {...field} labelId='demo-simple-select-error-label' id='demo-simple-select-error'>
-            <MenuItem value='admin'>Admin</MenuItem>
-            <MenuItem value='user'>User</MenuItem>
-          </Select>
-          <FormHelperText>{errors.website?.message}</FormHelperText>
-        </FormControl>
-      ),
-    },
-    {
-      name: 'phone',
-      component: (field: Field) => (
-        <TextField
-          {...field}
-          margin='dense'
-          fullWidth
-          type='text'
-          label='Company Role'
-          error={!!errors.phone}
-          helperText={errors.phone?.message}
-        />
-      ),
-    },
-  ];
+  const formFields: Array<Users.IField> = useMemo(
+    () => [
+      {
+        name: 'email',
+        component: (field) => (
+          <TextField
+            {...field}
+            margin='dense'
+            fullWidth
+            type='text'
+            label='Email'
+            error={!!errors.email}
+            helperText={errors.email?.message}
+          />
+        ),
+      },
+      {
+        name: 'name',
+        component: (field) => (
+          <TextField
+            {...field}
+            margin='dense'
+            fullWidth
+            type='text'
+            label='First Name'
+            error={!!errors.name}
+            helperText={errors.name?.message}
+          />
+        ),
+      },
+      {
+        name: 'username',
+        component: (field) => (
+          <TextField
+            {...field}
+            margin='dense'
+            fullWidth
+            type='text'
+            label='Last Name'
+            error={!!errors.username}
+            helperText={errors.username?.message}
+          />
+        ),
+      },
+      {
+        name: 'website',
+        component: (field) => (
+          <FormControl error={!!errors.website} fullWidth>
+            <InputLabel id='demo-simple-select-error-label'>Role</InputLabel>
+            <Select
+              {...field}
+              labelId='demo-simple-select-error-label'
+              id='demo-simple-select-error'
+            >
+              <MenuItem value='admin'>Admin</MenuItem>
+              <MenuItem value='user'>User</MenuItem>
+            </Select>
+            <FormHelperText>{errors.website?.message}</FormHelperText>
+          </FormControl>
+        ),
+      },
+      {
+        name: 'phone',
+        component: (field) => (
+          <TextField
+            {...field}
+            margin='dense'
+            fullWidth
+            type='text'
+            label='Company Role'
+            error={!!errors.phone}
+            helperText={errors.phone?.message}
+          />
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <>
@@ -138,6 +141,7 @@ export const AddUser: React.FC = () => {
 
       <Dialog open={open} onClose={handleClose} aria-labelledby='form-dialog-title'>
         <DialogTitle id='form-dialog-title'>Add User</DialogTitle>
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             {formFields.map((item) => (
@@ -150,6 +154,7 @@ export const AddUser: React.FC = () => {
               />
             ))}
           </DialogContent>
+
           <DialogActions>
             <Button type='button' onClick={handleClose} color='secondary'>
               Cancel
